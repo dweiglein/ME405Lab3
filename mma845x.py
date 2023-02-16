@@ -137,18 +137,20 @@ class MMA845x:
         be made, one must call @c active(). """
 
         if self._works:
-            reg1 = ord (self._i2c.mem_read (1, self._addr, CTRL_REG1))
+            reg1 = ord (self.i2c.mem_read (1, self.addr, CTRL_REG1))
             reg1 &= ~0x01
-            self._i2c.mem_write (chr (reg1 & 0xFF), self._addr, CTRL_REG1)
+            self.i2c.mem_write (chr (reg1 & 0xFF), self.addr, CTRL_REG1)
 
 
     def get_ax_bits (self):
         """! Get the X acceleration from the accelerometer in A/D bits and 
         return it.
         @return The measured X acceleration in A/D conversion bits """
-
-        print ('MMA845x clueless about X acceleration')
-        return 0
+        
+        ax_bits = self.i2c.mem_read(1, self.addr, CTRL_REG1)
+        ax_conv = int.from_bytes(ax_bits, "big")
+        
+        return ax_conv
 
 
     def get_ay_bits (self):
@@ -173,9 +175,10 @@ class MMA845x:
         """! Get the X acceleration from the accelerometer in g's, assuming
         that the accelerometer was correctly calibrated at the factory.
         @return The measured X acceleration in g's """
-
-        print ('MMA845x uncalibrated X')
-        return 0
+        
+        ax_int = self.get_ax_bits()
+        
+        return ax_int
 
 
     def get_ay (self):
@@ -202,8 +205,9 @@ class MMA845x:
         """! Get all three accelerations from the MMA845x accelerometer. The
         measurement is adjusted for the range (2g, 4g, or 8g) setting.
         @return A tuple containing the X, Y, and Z accelerations in g's """
-
-        return (self.get_ax (), self.get_ay (), self.get_az ())
+        
+        return (self.get_ax())
+        #return (self.get_ax (), self.get_ay (), self.get_az ())
 
 
     def __repr__ (self):
